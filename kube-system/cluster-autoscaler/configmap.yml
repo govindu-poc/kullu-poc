@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clusterautoscaler
+  namespace: kube-system
+data:
+  CLUSTER_NAME: poc-eks-cluster
