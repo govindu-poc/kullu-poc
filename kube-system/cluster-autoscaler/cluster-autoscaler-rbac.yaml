@@ -4,23 +4,75 @@ metadata:
   name: cluster-autoscaler
 rules:
   - apiGroups: [""]
-    resources: ["pods", "services", "endpoints", "nodes", "namespaces"]
-    verbs: ["watch", "list", "get"]
+    resources:
+      - pods
+      - services
+      - endpoints
+      - nodes
+      - namespaces
+      - configmaps
+      - replicationcontrollers
+      - persistentvolumeclaims
+    verbs:
+      - watch
+      - list
+      - get
+      - create
+      - update
+      - patch
   - apiGroups: ["extensions"]
-    resources: ["replicasets", "daemonsets"]
-    verbs: ["watch", "list", "get"]
+    resources:
+      - replicasets
+      - daemonsets
+    verbs:
+      - watch
+      - list
+      - get
   - apiGroups: ["policy"]
-    resources: ["poddisruptionbudgets"]
-    verbs: ["watch", "list"]
+    resources:
+      - poddisruptionbudgets
+    verbs:
+      - watch
+      - list
   - apiGroups: ["apps"]
-    resources: ["statefulsets", "replicasets", "daemonsets"]
-    verbs: ["watch", "list", "get"]
+    resources:
+      - statefulsets
+      - replicasets
+      - daemonsets
+    verbs:
+      - watch
+      - list
+      - get
   - apiGroups: ["autoscaling.k8s.io"]
-    resources: ["*"]
-    verbs: ["watch", "list", "get"]
+    resources:
+      - "*"
+    verbs:
+      - watch
+      - list
+      - get
   - apiGroups: ["coordination.k8s.io"]
-    resources: ["leases"]
-    verbs: ["get", "watch", "list", "delete", "update", "create"]
+    resources:
+      - leases
+    verbs:
+      - get
+      - watch
+      - list
+      - delete
+      - update
+      - create
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+    verbs:
+      - list
+      - watch
+  - apiGroups: ["storage.k8s.io"]
+    resources:
+      - csistoragecapacities
+      - csidrivers
+    verbs:
+      - list
+      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
