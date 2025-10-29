@@ -1,0 +1,34 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: pod-network-latency-frontend
+  namespace: litmus
+spec:
+  appinfo:
+    appns: sock-shop
+    applabel: "name=front-end"
+    appkind: deployment
+  chaosServiceAccount: litmus-admin
+  experiments:
+    - name: pod-network-latency
+      spec:
+        components:
+          env:
+            # How long to inject latency (in seconds)
+            - name: TOTAL_CHAOS_DURATION
+              value: "60"
+
+            # Which network interface to target
+            - name: NETWORK_INTERFACE
+              value: "eth0"
+
+            # Latency to introduce in milliseconds
+            - name: NETWORK_LATENCY
+              value: "2000"
+
+            # Optional: restrict traffic targets
+            - name: DESTINATION_IPS
+              value: "8.8.8.8,1.1.1.1"
+
+            - name: DESTINATION_HOSTS
+              value: "google.com,github.com"

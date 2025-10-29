@@ -14,19 +14,15 @@ resource "aws_vpc" "eks_vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name        = "${var.cluster_name}-${var.environment}-vpc"
-    Project     = "poc-demo"
-    Owner       = "govindu"
-    Environment = var.environment
+    Name    = "${var.cluster_name}-vpc"
+    Project = "poc-demo"
+    Owner   = "govindu"
   }
 }
 
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.eks_vpc.id
-  tags = {
-    Name        = "${var.cluster_name}-${var.environment}-igw"
-    Environment = var.environment
-  }
+  tags = { Name = "${var.cluster_name}-igw" }
 }
 
 resource "aws_subnet" "public" {
@@ -37,10 +33,9 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name                                     = "${var.cluster_name}-${var.environment}-public-${count.index}"
-    "kubernetes.io/role/elb"                 = "1"
-    "kubernetes.io/cluster/${var.cluster_name}-${var.environment}" = "shared"
-    Environment                              = var.environment
+    Name                            = "${var.cluster_name}-public-${count.index}"
+    "kubernetes.io/role/elb"        = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
 
@@ -51,10 +46,9 @@ resource "aws_subnet" "private" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name                                     = "${var.cluster_name}-${var.environment}-private-${count.index}"
-    "kubernetes.io/role/internal-elb"        = "1"
-    "kubernetes.io/cluster/${var.cluster_name}-${var.environment}" = "shared"
-    Environment                              = var.environment
+    Name                              = "${var.cluster_name}-private-${count.index}"
+    "kubernetes.io/role/internal-elb" = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
 
@@ -64,10 +58,7 @@ resource "aws_route_table" "public" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.gw.id
   }
-  tags = {
-    Name        = "${var.cluster_name}-${var.environment}-public-rt"
-    Environment = var.environment
-  }
+  tags = { Name = "${var.cluster_name}-public-rt" }
 }
 
 resource "aws_route_table_association" "public" {
@@ -90,7 +81,7 @@ data "aws_iam_policy_document" "eks_assume_role" {
 }
 
 resource "aws_iam_role" "eks_cluster_role" {
-  name               = "${var.cluster_name}-${var.environment}-cluster-role"
+  name               = "${var.cluster_name}-cluster-role"
   assume_role_policy = data.aws_iam_policy_document.eks_assume_role.json
 }
 
@@ -110,7 +101,7 @@ data "aws_iam_policy_document" "eks_node_assume_role" {
 }
 
 resource "aws_iam_role" "eks_node_role" {
-  name               = "${var.cluster_name}-${var.environment}-node-role"
+  name               = "${var.cluster_name}-node-role"
   assume_role_policy = data.aws_iam_policy_document.eks_node_assume_role.json
 }
 
@@ -138,7 +129,7 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_policy" {
 # 3. EKS Cluster
 #######################################
 resource "aws_eks_cluster" "eks" {
-  name     = "${var.cluster_name}-${var.environment}"
+  name     = var.cluster_name
   role_arn = aws_iam_role.eks_cluster_role.arn
   version  = "1.30"
 
@@ -156,22 +147,21 @@ resource "aws_eks_cluster" "eks" {
 #######################################
 resource "aws_eks_node_group" "demo_nodes" {
   cluster_name    = aws_eks_cluster.eks.name
-  node_group_name = "${var.cluster_name}-${var.environment}-nodes"
+  node_group_name = "demo-nodes"
   node_role_arn   = aws_iam_role.eks_node_role.arn
   subnet_ids      = aws_subnet.public[*].id
 
-  ami_type       = var.ami_type
-  instance_types = var.instance_types
+  ami_type       = "AL2_x86_64"
+  instance_types = ["t3.medium"]
 
   scaling_config {
-    desired_size = var.desired_size
-    min_size     = var.min_size
-    max_size     = var.max_size
+    desired_size = 2
+    min_size     = 1
+    max_size     = 5
   }
 
   tags = {
-    Name        = "${var.cluster_name}-${var.environment}-nodegroup"
-    Environment = var.environment
+    Name = "poc-eks-nodegroup"
   }
 
   depends_on = [aws_eks_cluster.eks]
@@ -195,7 +185,7 @@ resource "aws_iam_openid_connect_provider" "eks" {
 }
 
 #######################################
-# 6. IAM Role for Cluster Autoscaler (IRSA)
+# 6. IAM Role for Cluster Autoscaler with IRSA
 #######################################
 data "aws_iam_policy_document" "cluster_autoscaler_assume_role" {
   statement {
@@ -213,14 +203,13 @@ data "aws_iam_policy_document" "cluster_autoscaler_assume_role" {
 }
 
 resource "aws_iam_role" "cluster_autoscaler_irsa" {
-  name               = "${var.cluster_name}-${var.environment}-cluster-autoscaler-irsa"
+  name               = "${var.cluster_name}-cluster-autoscaler-irsa"
   assume_role_policy = data.aws_iam_policy_document.cluster_autoscaler_assume_role.json
 
   tags = {
-    Name        = "${var.cluster_name}-${var.environment}-cluster-autoscaler-irsa"
-    Project     = "poc-demo"
-    Owner       = "govindu"
-    Environment = var.environment
+    Name    = "${var.cluster_name}-cluster-autoscaler-irsa"
+    Project = "poc-demo"
+    Owner   = "govindu"
   }
 }
 
@@ -240,7 +229,7 @@ resource "aws_iam_role_policy_attachment" "cluster_autoscaler_ec2_registry_reado
 }
 
 #######################################
-# 7. Outputs
+# 7. Output the IRSA Role ARN for ServiceAccount annotation
 #######################################
 output "cluster_autoscaler_irsa_role_arn" {
   description = "IAM Role ARN for Cluster Autoscaler IRSA"

@@ -19,7 +19,7 @@ output "eks_cluster_name" {
 }
 
 output "eks_cluster_endpoint" {
-  description = "EKS Cluster API Endpoint"
+  description = "EKS Cluster Endpoint"
   value       = aws_eks_cluster.eks.endpoint
 }
 
@@ -36,14 +36,4 @@ output "eks_node_group_name" {
 output "eks_node_group_arn" {
   description = "EKS Node Group ARN"
   value       = aws_eks_node_group.demo_nodes.arn
-}
-
-output "cluster_autoscaler_irsa_role_arn" {
-  description = "IAM Role ARN for Cluster Autoscaler IRSA"
-  value       = aws_iam_role.cluster_autoscaler_irsa.arn
-}
-
-output "environment" {
-  description = "The environment this EKS cluster belongs to"
-  value       = var.environment
 }
