@@ -34,17 +34,20 @@ How to Deploy Terraform Envoronments
 ###################
 #      Dev      #
 ###################
-terraform init -backend-config=backend-dev.tf
+terraform init -reconfigure -backend-config=dev.tfbackend
 terraform apply -var-file=dev.tfvars
+terraform destroy -var-file=dev.tfvars -auto-approve
 
 ###################
 #      Stage      #
 ###################
-terraform init -backend-config=backend-stage.tf
+terraform init -reconfigure -backend-config=stage.tfbackend
 terraform apply -var-file=stage.tfvars
+terraform destroy -var-file=stage.tfvars -auto-approve
 
 ###################
 #      Prod      #
 ###################
-terraform init -backend-config=backend-prod.tf
+terraform init -reconfigure -backend-config=prod.tfbackend
 terraform apply -var-file=prod.tfvars
+terraform destroy -var-file=prod.tfvars -auto-approve

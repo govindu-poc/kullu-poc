@@ -238,11 +238,3 @@ resource "aws_iam_role_policy_attachment" "cluster_autoscaler_ec2_registry_reado
   role       = aws_iam_role.cluster_autoscaler_irsa.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
-
-#######################################
-# 7. Outputs
-#######################################
-output "cluster_autoscaler_irsa_role_arn" {
-  description = "IAM Role ARN for Cluster Autoscaler IRSA"
-  value       = aws_iam_role.cluster_autoscaler_irsa.arn
-}
