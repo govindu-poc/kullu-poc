@@ -1,5 +1,5 @@
-bucket         = "poc-eks-tf-state"
+bucket         = "kullu-eks-tf-state"
 key            = "eks/dev/terraform.tfstate"
 region         = "eu-north-1"
-dynamodb_table = "poc-eks-tf-lock"
+dynamodb_table = "kullu-eks-tf-lock"
 encrypt        = true
